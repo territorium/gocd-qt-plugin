@@ -34,8 +34,15 @@ public class QtTaskExecutor {
       if (isBuild) {
         Result result = process(config, context, console, Qt.MODE_QMAKE, null);
         if (result.responseCode() == DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
-          for (String target : config.getTarget().split(",")) {
+          String targets = config.getTarget();
+          for (String target : targets.split(",")) {
             result = process(config, context, console, Qt.MODE_MAKE, target.trim());
+            if (result.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
+              return result;
+            }
+          }
+          if (targets.endsWith(",")) {
+            result = process(config, context, console, Qt.MODE_MAKE, "");
             if (result.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
               return result;
             }
@@ -67,6 +74,7 @@ public class QtTaskExecutor {
     updateEnvironment(builder, context, config);
 
     console.printLine("Launching command: " + builder.command());
+    console.printEnvironment(builder.environment());
 
     Process process = builder.start();
     console.readErrorOf(process.getErrorStream());
