@@ -120,10 +120,6 @@ public class QtTaskExecutor {
         break;
 
       case Qt.MODE_TEST:
-        String spec = Qt.getSpec(context, config);
-        String release = context.getEnvironment().get(Qt.RELEASE);
-        String overlay = context.getEnvironment().get(Qt.QT_OVERLAY);
-
         path = Paths.get(Qt.getArch(context, config), "bin");
         String bin = new File(qtHome, path.toString()).getAbsolutePath();
         if (isWindows) {
@@ -140,8 +136,10 @@ public class QtTaskExecutor {
         if (isWindows) {
           testCase += ".exe";
         }
-        Path test = Paths.get(release, spec, "bin", testCase);
-        args.add(new File(overlay, test.toString()).getAbsolutePath());
+
+        String spec = Qt.getSpec(context, config);
+        Path test = Paths.get(context.getWorkingDir(), spec, "bin", testCase);
+        args.add(new File(test.toFile(), testCase).getAbsolutePath());
         args.add("-xunitxml");
         break;
 
@@ -178,14 +176,12 @@ public class QtTaskExecutor {
       builder.environment().put(Qt.QT_REPO, repository.resolve(release).toString());
     }
 
-    if (context.getEnvironment().containsKey(Qt.QT_OVERLAY) && release != null) {
-      String spec = Qt.getSpec(context, config);
-      Path buildPath = Paths.get(context.getEnvironment().get(Qt.QT_OVERLAY)).resolve(release);
-      Path base = buildPath.resolve(spec);
+    String spec = Qt.getSpec(context, config);
+    Path buildPath = new File(context.getWorkingDir()).getAbsoluteFile().toPath().resolve("build");
+    Path base = buildPath.resolve(spec);
 
-      builder.environment().put(Qt.QT_BUILD, buildPath.toString());
-      builder.environment().put(Qt.QML2_IMPORT_PATH, base.resolve("qml").toString());
-      builder.environment().put(Qt.QT_PLUGIN_PATH, base.resolve("plugins").toString());
-    }
+    builder.environment().put(Qt.QT_BUILD, buildPath.toString());
+    builder.environment().put(Qt.QML2_IMPORT_PATH, base.resolve("qml").toString());
+    builder.environment().put(Qt.QT_PLUGIN_PATH, base.resolve("plugins").toString());
   }
 }

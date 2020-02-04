@@ -42,7 +42,6 @@ public class Qt {
   public static final String QML2_IMPORT_PATH = "QML2_IMPORT_PATH";
 
   public static final String QT_REPOSITORY    = "QT_REPOSITORY";
-  public static final String QT_OVERLAY       = "QT_OVERLAY";
   public static final String RELEASE          = "RELEASE";
 
 
