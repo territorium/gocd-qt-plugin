@@ -138,7 +138,7 @@ public class QtTaskExecutor {
         }
 
         String spec = Qt.getSpec(context, config);
-        Path test = Paths.get(context.getWorkingDir(), spec, "bin", testCase);
+        Path test = Paths.get(context.getWorkingDir(), "build", spec, "bin");
         args.add(new File(test.toFile(), testCase).getAbsolutePath());
         args.add("-xunitxml");
         break;
