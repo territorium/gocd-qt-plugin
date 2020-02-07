@@ -14,25 +14,10 @@
 
 package cd.go.task.qt;
 
-import java.util.Map;
+import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
-public class Context {
+// TODO: execute your task and setup stdout/stderr to pipe the streams to GoCD
+public interface TaskExecutor {
 
-  private final String              workingDir;
-  private final Map<String, String> environmentVariables;
-
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public Context(Map context) {
-    workingDir = (String) context.get("workingDirectory");
-    environmentVariables = (Map) context.get("environmentVariables");
-  }
-
-  public final String getWorkingDir() {
-    return workingDir;
-  }
-
-  public final Map<String, String> getEnvironment() {
-    return environmentVariables;
-  }
+  public Result execute(Config config, Context context, JobConsoleLogger console);
 }

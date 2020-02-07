@@ -25,24 +25,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: execute your task and setup stdout/stderr to pipe the streams to GoCD
-public class QtTaskExecutor {
+public class QtTaskExecutor implements TaskExecutor {
+
+  private enum Build {
+    QMAKE,
+    MAKE,
+    TEST
+  }
 
 
   public Result execute(Config config, Context context, JobConsoleLogger console) {
     boolean isBuild = (Qt.MODE_BUILD.equalsIgnoreCase(config.getBuild())) && config.getTarget() != null;
     try {
       if (isBuild) {
-        Result result = process(config, context, console, Qt.MODE_QMAKE, null);
+        Result result = process(config, context, console, Build.QMAKE, null);
         if (result.responseCode() == DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
           String targets = config.getTarget();
           for (String target : targets.split(",")) {
-            result = process(config, context, console, Qt.MODE_MAKE, target.trim());
+            result = process(config, context, console, Build.MAKE, target.trim());
             if (result.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
               return result;
             }
           }
           if (targets.endsWith(",")) {
-            result = process(config, context, console, Qt.MODE_MAKE, "");
+            result = process(config, context, console, Build.MAKE, "");
             if (result.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
               return result;
             }
@@ -50,7 +56,7 @@ public class QtTaskExecutor {
         }
         return result;
       }
-      return process(config, context, console, config.getBuild(), config.getTarget());
+      return process(config, context, console, Build.TEST, config.getTarget());
     } catch (Exception e) {
       return new Result(false, "Failed to invoke the build!", e);
     }
@@ -66,7 +72,7 @@ public class QtTaskExecutor {
    * @param build
    * @param target
    */
-  private Result process(Config config, Context context, JobConsoleLogger console, String build, String target)
+  private Result process(Config config, Context context, JobConsoleLogger console, Build build, String target)
       throws IOException, InterruptedException {
     ProcessBuilder builder = createCommand(context, config, build, target);
     builder.directory(new File(context.getWorkingDir()));
@@ -95,7 +101,7 @@ public class QtTaskExecutor {
    * @param build
    * @param target
    */
-  private ProcessBuilder createCommand(Context context, Config config, String build, String target) {
+  private ProcessBuilder createCommand(Context context, Config config, Build build, String target) {
     boolean isWindows = Util.isWindows();
     List<String> args = new ArrayList<String>();
     if (isWindows) {
@@ -105,8 +111,8 @@ public class QtTaskExecutor {
     }
 
     String qtHome = context.getEnvironment().get(Qt.QT_HOME);
-    switch (build.toUpperCase()) {
-      case Qt.MODE_QMAKE:
+    switch (build) {
+      case QMAKE:
         Path path = Paths.get(Qt.getArch(context, config), "bin", "qmake");
 
         args.add(new File(qtHome, path.toString()).getAbsolutePath());
@@ -119,7 +125,7 @@ public class QtTaskExecutor {
         args.add(config.getCommand());
         break;
 
-      case Qt.MODE_TEST:
+      case TEST:
         path = Paths.get(Qt.getArch(context, config), "bin");
         String bin = new File(qtHome, path.toString()).getAbsolutePath();
         if (isWindows) {
@@ -143,8 +149,7 @@ public class QtTaskExecutor {
         args.add("-xunitxml");
         break;
 
-      case Qt.MODE_MAKE:
-      default:
+      case MAKE:
         args.add(isWindows ? "jom" : "make");
         if (target != null && !target.isEmpty()) {
           args.add(target);

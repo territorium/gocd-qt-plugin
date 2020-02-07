@@ -14,26 +14,28 @@
 
 package cd.go.task.qt.request;
 
-import com.google.gson.GsonBuilder;
-import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
+import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import cd.go.task.qt.QtPlugin;
+import cd.go.task.qt.Util;
 
-public class ValidateRequest {
+public class ViewRequest {
 
-  public GoPluginApiResponse execute(GoPluginApiRequest request) {
-    int responseCode = DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE;
-
-    HashMap errorMap = new HashMap<>();
-    Map configMap = (Map) new GsonBuilder().create().fromJson(request.requestBody(), Object.class);
-
-    HashMap<String, Object> validationResult = new HashMap<>();
-    validationResult.put("errors", errorMap);
-    return new DefaultGoPluginApiResponse(responseCode, QtPlugin.GSON.toJson(validationResult));
+  public static GoPluginApiResponse of(String display, String template) {
+    HashMap<String, String> view = new HashMap<>();
+    try {
+      view.put("displayValue", display);
+      view.put("template", Util.readResource(template));
+      return new DefaultGoPluginApiResponse(DefaultGoApiResponse.SUCCESS_RESPONSE_CODE, QtPlugin.GSON.toJson(view));
+    } catch (Exception e) {
+      String errorMessage = "Failed to find template: " + e.getMessage();
+      view.put("exception", errorMessage);
+      QtPlugin.LOGGER.error(errorMessage, e);
+    }
+    return new DefaultGoPluginApiResponse(DefaultGoApiResponse.INTERNAL_ERROR, QtPlugin.GSON.toJson(view));
   }
 }

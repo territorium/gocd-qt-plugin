@@ -24,9 +24,9 @@ import cd.go.task.qt.Config;
 import cd.go.task.qt.QtPlugin;
 
 // TODO: change this to allow configuration options in your configuration
-public class GetConfigRequest {
+public class ConfigRequest {
 
-  public GoPluginApiResponse execute() {
+  public static GoPluginApiResponse of() {
     HashMap<String, Object> config = new LinkedHashMap<>();
 
     HashMap<String, Object> requestBuild = new HashMap<>();

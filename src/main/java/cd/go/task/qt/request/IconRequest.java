@@ -14,29 +14,21 @@
 
 package cd.go.task.qt.request;
 
-import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
+import com.google.gson.JsonObject;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
-import java.util.HashMap;
+import java.util.Base64;
 
 import cd.go.task.qt.QtPlugin;
 import cd.go.task.qt.Util;
 
-public class GetViewRequest {
+public class IconRequest {
 
-  public GoPluginApiResponse execute() {
-    int responseCode = DefaultGoApiResponse.SUCCESS_RESPONSE_CODE;
-    HashMap<String, String> view = new HashMap<>();
-    view.put("displayValue", "Qt Task");
-    try {
-      view.put("template", Util.readResource("/task.template.html"));
-    } catch (Exception e) {
-      responseCode = DefaultGoApiResponse.INTERNAL_ERROR;
-      String errorMessage = "Failed to find template: " + e.getMessage();
-      view.put("exception", errorMessage);
-      QtPlugin.LOGGER.error(errorMessage, e);
-    }
-    return new DefaultGoPluginApiResponse(responseCode, QtPlugin.GSON.toJson(view));
+  public static GoPluginApiResponse of(String type, String icon) {
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.addProperty("content_type", type);
+    jsonObject.addProperty("data", Base64.getEncoder().encodeToString(Util.readResourceBytes(icon)));
+    return DefaultGoPluginApiResponse.success(QtPlugin.GSON.toJson(jsonObject));
   }
 }

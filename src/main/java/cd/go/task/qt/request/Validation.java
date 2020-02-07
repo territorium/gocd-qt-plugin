@@ -14,29 +14,27 @@
 
 package cd.go.task.qt.request;
 
-import com.google.gson.JsonObject;
+import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
-import java.util.Base64;
+import java.util.HashMap;
 
 import cd.go.task.qt.QtPlugin;
-import cd.go.task.qt.Util;
 
-public class GetIconRequest {
+public class Validation {
 
-  public GoPluginApiResponse execute() {
-    JsonObject jsonObject = new JsonObject();
-    jsonObject.addProperty("content_type", getContentType());
-    jsonObject.addProperty("data", Base64.getEncoder().encodeToString(Util.readResourceBytes(getIcon())));
-    return DefaultGoPluginApiResponse.success(QtPlugin.GSON.toJson(jsonObject));
-  }
+  @SuppressWarnings({ "rawtypes" })
+  public static GoPluginApiResponse of(GoPluginApiRequest request) {
+    int responseCode = DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE;
 
-  private String getContentType() {
-    return "image/png";
-  }
+    HashMap errorMap = new HashMap<>();
 
-  private String getIcon() {
-    return "/plugin-icon.png";
+    // Map configMap = (Map) new GsonBuilder().create().fromJson(request.requestBody(),
+    // Object.class);
+
+    HashMap<String, Object> validationResult = new HashMap<>();
+    validationResult.put("errors", errorMap);
+    return new DefaultGoPluginApiResponse(responseCode, QtPlugin.GSON.toJson(validationResult));
   }
 }

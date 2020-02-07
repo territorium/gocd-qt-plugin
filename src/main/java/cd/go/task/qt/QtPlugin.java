@@ -28,10 +28,10 @@ import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import java.util.Arrays;
 
 import cd.go.task.qt.request.ExecuteRequest;
-import cd.go.task.qt.request.GetConfigRequest;
-import cd.go.task.qt.request.GetIconRequest;
-import cd.go.task.qt.request.GetViewRequest;
-import cd.go.task.qt.request.ValidateRequest;
+import cd.go.task.qt.request.ConfigRequest;
+import cd.go.task.qt.request.IconRequest;
+import cd.go.task.qt.request.ViewRequest;
+import cd.go.task.qt.request.Validation;
 
 @Extension
 public class QtPlugin implements GoPlugin {
@@ -51,15 +51,15 @@ public class QtPlugin implements GoPlugin {
   public GoPluginApiResponse handle(GoPluginApiRequest request) throws UnhandledRequestTypeException {
     switch (request.requestName()) {
       case "icon":
-        return new GetIconRequest().execute();
+        return IconRequest.of("image/png", "/plugin-icon.png");
       case "view":
-        return new GetViewRequest().execute();
+        return ViewRequest.of("Qt Task", "/task.template.html");
       case "configuration":
-        return new GetConfigRequest().execute();
+        return ConfigRequest.of();
       case "validate":
-        return new ValidateRequest().execute(request);
+        return Validation.of(request);
       case "execute":
-        return new ExecuteRequest().execute(request);
+        return ExecuteRequest.execute(request, new QtTaskExecutor());
       default:
         throw new UnhandledRequestTypeException(request.requestName());
     }

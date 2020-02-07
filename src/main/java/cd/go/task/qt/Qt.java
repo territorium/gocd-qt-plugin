@@ -27,8 +27,6 @@ import java.util.Map;
 public class Qt {
 
   public static final String MODE_BUILD       = "BUILD";
-  public static final String MODE_QMAKE       = "QMAKE";
-  public static final String MODE_MAKE        = "MAKE";
   public static final String MODE_TEST        = "TEST";
 
   public static final String QT_HOME          = "QT_HOME";

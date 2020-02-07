@@ -25,14 +25,14 @@ import java.util.Map;
 import cd.go.task.qt.Config;
 import cd.go.task.qt.Context;
 import cd.go.task.qt.QtPlugin;
-import cd.go.task.qt.QtTaskExecutor;
 import cd.go.task.qt.Result;
+import cd.go.task.qt.TaskExecutor;
 
 // TODO: add code here to execute your task
 public class ExecuteRequest {
 
-  public GoPluginApiResponse execute(GoPluginApiRequest request) {
-    QtTaskExecutor executor = new QtTaskExecutor();
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static GoPluginApiResponse execute(GoPluginApiRequest request, TaskExecutor executor) {
     Map executionRequest = (Map) new GsonBuilder().create().fromJson(request.requestBody(), Object.class);
 
     Map context = (Map) executionRequest.get("context");
