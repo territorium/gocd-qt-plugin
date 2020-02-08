@@ -1,20 +1,23 @@
 /*
  * Copyright 2017 ThoughtWorks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
  */
 
 package cd.go.task.qt;
 
 import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
+import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
 import java.io.File;
@@ -25,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: execute your task and setup stdout/stderr to pipe the streams to GoCD
-public class QtTaskExecutor implements TaskExecutor {
+public class QtTaskExecutor {
 
   private enum Build {
     QMAKE,
@@ -33,32 +36,31 @@ public class QtTaskExecutor implements TaskExecutor {
     TEST
   }
 
-
-  public Result execute(Config config, Context context, JobConsoleLogger console) {
+  public GoPluginApiResponse execute(QtConfig config, TaskContext context, JobConsoleLogger console) {
     boolean isBuild = (Qt.MODE_BUILD.equalsIgnoreCase(config.getBuild())) && config.getTarget() != null;
     try {
       if (isBuild) {
-        Result result = process(config, context, console, Build.QMAKE, null);
-        if (result.responseCode() == DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
+        TaskResponse response = process(config, context, console, Build.QMAKE, null);
+        if (response.responseCode() == DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
           String targets = config.getTarget();
           for (String target : targets.split(",")) {
-            result = process(config, context, console, Build.MAKE, target.trim());
-            if (result.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
-              return result;
+            response = process(config, context, console, Build.MAKE, target.trim());
+            if (response.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
+              return response.toResponse();
             }
           }
           if (targets.endsWith(",")) {
-            result = process(config, context, console, Build.MAKE, "");
-            if (result.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
-              return result;
+            response = process(config, context, console, Build.MAKE, "");
+            if (response.responseCode() != DefaultGoApiResponse.SUCCESS_RESPONSE_CODE) {
+              return response.toResponse();
             }
           }
         }
-        return result;
+        return response.toResponse();
       }
-      return process(config, context, console, Build.TEST, config.getTarget());
+      return process(config, context, console, Build.TEST, config.getTarget()).toResponse();
     } catch (Exception e) {
-      return new Result(false, "Failed to invoke the build!", e);
+      return TaskResponse.failure(e, "Failed to invoke the build!").toResponse();
     }
   }
 
@@ -72,8 +74,8 @@ public class QtTaskExecutor implements TaskExecutor {
    * @param build
    * @param target
    */
-  private Result process(Config config, Context context, JobConsoleLogger console, Build build, String target)
-      throws IOException, InterruptedException {
+  private TaskResponse process(QtConfig config, TaskContext context, JobConsoleLogger console, Build build,
+      String target) throws IOException, InterruptedException {
     ProcessBuilder builder = createCommand(context, config, build, target);
     builder.directory(new File(context.getWorkingDir()));
     builder.environment().putAll(context.getEnvironment());
@@ -88,8 +90,8 @@ public class QtTaskExecutor implements TaskExecutor {
 
     int exitCode = process.waitFor();
     process.destroy();
-    return (exitCode == 0) ? new Result(true, "Executed the build")
-        : new Result(false, "Could not execute build! Process returned with status code " + exitCode);
+    return (exitCode == 0) ? TaskResponse.success("Executed the build")
+        : TaskResponse.failure("Could not execute build! Process returned with status code " + exitCode);
   }
 
 
@@ -101,7 +103,7 @@ public class QtTaskExecutor implements TaskExecutor {
    * @param build
    * @param target
    */
-  private ProcessBuilder createCommand(Context context, Config config, Build build, String target) {
+  private ProcessBuilder createCommand(TaskContext context, QtConfig config, Build build, String target) {
     boolean isWindows = Util.isWindows();
     List<String> args = new ArrayList<String>();
     if (isWindows) {
@@ -170,7 +172,7 @@ public class QtTaskExecutor implements TaskExecutor {
    * @param context
    * @param config
    */
-  private void updateEnvironment(ProcessBuilder builder, Context context, Config config) {
+  private void updateEnvironment(ProcessBuilder builder, TaskContext context, QtConfig config) {
     String release = context.getEnvironment().get(Qt.RELEASE);
 
     builder.environment().put(Qt.QT_ARCH, Qt.getArch(context, config));
