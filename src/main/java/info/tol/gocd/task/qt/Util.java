@@ -12,7 +12,7 @@
  * the License.
  */
 
-package cd.go.task.qt;
+package info.tol.gocd.task.qt;
 
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
@@ -37,7 +37,7 @@ public class Util {
 
   public static byte[] readResourceBytes(String resourceFile) {
     try (InputStream is = Util.class.getResourceAsStream(resourceFile)) {
-      return readFully(is);
+      return Util.readFully(is);
     } catch (IOException e) {
       throw new RuntimeException("Could not find resource " + resourceFile, e);
     }
@@ -53,7 +53,7 @@ public class Util {
 
 
   public static boolean containsIgnoreCase(String text, String value) {
-    return text != null && value != null && text.toLowerCase().contains(value.toLowerCase());
+    return (text != null) && (value != null) && text.toLowerCase().contains(value.toLowerCase());
   }
 
   private static byte[] readFully(InputStream input) throws IOException {

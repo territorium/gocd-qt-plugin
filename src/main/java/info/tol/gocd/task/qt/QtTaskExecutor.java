@@ -1,20 +1,18 @@
 /*
  * Copyright 2017 ThoughtWorks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
-package cd.go.task.qt;
+package info.tol.gocd.task.qt;
 
 import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -37,7 +35,7 @@ public class QtTaskExecutor {
   }
 
   public GoPluginApiResponse execute(QtConfig config, TaskContext context, JobConsoleLogger console) {
-    boolean isBuild = (Qt.MODE_BUILD.equalsIgnoreCase(config.getBuild())) && config.getTarget() != null;
+    boolean isBuild = (Qt.MODE_BUILD.equalsIgnoreCase(config.getBuild())) && (config.getTarget() != null);
     try {
       if (isBuild) {
         TaskResponse response = process(config, context, console, Build.QMAKE, null);
@@ -67,7 +65,7 @@ public class QtTaskExecutor {
 
   /**
    * Process a single build.
-   * 
+   *
    * @param config
    * @param context
    * @param console
@@ -105,7 +103,7 @@ public class QtTaskExecutor {
    */
   private ProcessBuilder createCommand(TaskContext context, QtConfig config, Build build, String target) {
     boolean isWindows = Util.isWindows();
-    List<String> args = new ArrayList<String>();
+    List<String> args = new ArrayList<>();
     if (isWindows) {
       args.add("vcvarsall.bat");
       args.add("x86_amd64");
@@ -138,7 +136,7 @@ public class QtTaskExecutor {
         }
 
         String testCase = config.getCommand();
-        if (testCase == null || testCase.trim().isEmpty()) {
+        if ((testCase == null) || testCase.trim().isEmpty()) {
           testCase = config.getTarget();
         }
         if (isWindows) {
@@ -153,7 +151,7 @@ public class QtTaskExecutor {
 
       case MAKE:
         args.add(isWindows ? "jom" : "make");
-        if (target != null && !target.isEmpty()) {
+        if ((target != null) && !target.isEmpty()) {
           args.add(target);
         }
         break;
@@ -178,7 +176,7 @@ public class QtTaskExecutor {
     builder.environment().put(Qt.QT_ARCH, Qt.getArch(context, config));
     builder.environment().put(Qt.QT_SPEC, Qt.getSpec(context, config));
 
-    if (context.getEnvironment().containsKey(Qt.QT_REPOSITORY) && release != null) {
+    if (context.getEnvironment().containsKey(Qt.QT_REPOSITORY) && (release != null)) {
       Path repository = Paths.get(context.getEnvironment().get(Qt.QT_REPOSITORY));
       builder.environment().put(Qt.QT_REPO, repository.resolve(release).toString());
     }

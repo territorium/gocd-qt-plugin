@@ -1,5 +1,5 @@
 
-package cd.go.task.qt;
+package info.tol.gocd.task.qt;
 
 
 public enum QtPlatform {
@@ -13,7 +13,7 @@ public enum QtPlatform {
   public final String SPEC;
 
   private QtPlatform(String aRCH, String sPEC) {
-    ARCH = aRCH;
-    SPEC = sPEC;
+    this.ARCH = aRCH;
+    this.SPEC = sPEC;
   }
 }
