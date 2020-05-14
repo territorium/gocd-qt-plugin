@@ -22,41 +22,74 @@ import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
 import java.util.Arrays;
 
+import info.tol.gocd.task.qt.handler.TaskHandler;
+import info.tol.gocd.task.qt.handler.ValidateHandler;
+import info.tol.gocd.util.request.Request;
+import info.tol.gocd.util.request.ViewHandler;
+
+/**
+ * GoPlugin interface represents Go plugin. It is necessary to implement this interface for any
+ * plugin implementation to be recognized as a Go plugin
+ */
 @Extension
 public class QtPlugin implements GoPlugin {
 
-  public static final Logger LOGGER = Logger.getLoggerFor(QtPlugin.class);
+  private static final Logger LOGGER = Logger.getLoggerFor(QtPlugin.class);
 
-  // private GoApplicationAccessor accessor;
 
+  /**
+   * Provides an instance of GoPluginIdentifier, providing details about supported extension point
+   * and its versions
+   */
   @Override
   public GoPluginIdentifier pluginIdentifier() {
     return new GoPluginIdentifier("task", Arrays.asList("1.0"));
   }
 
+  /**
+   * Initializes an instance of GoApplicationAccessor. This method would be invoked before Go
+   * interacts with plugin to handle any GoPluginApiRequest. Instance of GoApplicationAccessor will
+   * allow plugin to communicate with Go.
+   *
+   * @param accessor
+   */
   @Override
-  public void initializeGoApplicationAccessor(GoApplicationAccessor accessor) {
-    // this.accessor = accessor;
-  }
+  public void initializeGoApplicationAccessor(GoApplicationAccessor accessor) {}
 
+  /**
+   * Handles GoPluginApiRequest request submitted from Go to plugin implementation and returns
+   * result as GoPluginApiResponse
+   *
+   * @param request
+   */
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) throws UnhandledRequestTypeException {
-    switch (request.requestName()) {
-      case TaskRequest.REQUEST_ICON:
-        return TaskRequest.icon("image/png", "/plugin-icon.png");
-      case TaskRequest.REQUEST_VIEW:
-        return TaskRequest.view("Qt Task", "/task.template.html");
-      case TaskRequest.REQUEST_CONFIG:
-        return QtTaskRequest.config();
-      case TaskRequest.REQUEST_VALIDATE:
-        return QtTaskRequest.validate(request);
-      case TaskRequest.REQUEST_EXECUTE:
-        return QtTaskRequest.execute(request);
-      default:
-        throw new UnhandledRequestTypeException(request.requestName());
+    try {
+      switch (request.requestName()) {
+        case Request.TASK_VIEW:
+          return new ViewHandler("Qt Task", "/task.template.html").handle(request);
+
+        case Request.TASK_CONFIG:
+          return Qt2Config.createGoApiResponse();
+
+        case Request.TASK_VALIDATE:
+          return new ValidateHandler().handle(request);
+
+        case Request.TASK_EXECUTE:
+          // return QtTaskRequest.execute(request);
+          return new TaskHandler(JobConsoleLogger.getConsoleLogger()).handle(request);
+
+
+        default:
+          throw new UnhandledRequestTypeException(request.requestName());
+      }
+    } catch (Exception e) {
+      QtPlugin.LOGGER.error("Error while executing request " + request.requestName(), e);
+      throw new RuntimeException(e);
     }
   }
 }

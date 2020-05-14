@@ -31,14 +31,14 @@ def gitRevision = { ->
 project.ext.gitRevision = gitRevision()
 
 group = 'tol.info.gocd.plugin'
-version = '1.1.0'
+version = '1.1.1'
 
 // these values that go into plugin.xml
 project.ext.pluginDesc = [
   id         : 'cd.go.task.qt',
   version    : project.version,
   goCdVersion: '18.7.0',
-  name       : 'Task plugin for Qt',
+  name       : 'Qt Task Plugin for GoCD',
   description: 'Plugin allows to create Qt tasks',
   vendorName : 'TOL GmbH',
   vendorUrl  : 'https://github.com/territorium/gocd-qt-task-plugin.git'
@@ -63,8 +63,7 @@ sourceSets {
 
 dependencies {
   compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: '19.2.0'
-  compile group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
-  compile group: 'commons-io', name: 'commons-io', version: '2.6'
+  compile group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
 
   // Use JUnit test framework
   testCompile group: 'junit', name: 'junit', version: '4.12'

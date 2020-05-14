@@ -12,24 +12,23 @@
  * the License.
  */
 
-package info.tol.gocd.task.qt;
+package info.tol.gocd.task.util;
 
 import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
-import java.util.HashMap;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 public class TaskResponse {
 
-  private final boolean   success;
-  private final String    message;
-  private final Throwable throwable;
+  private final boolean success;
+  private final String  message;
 
-  private TaskResponse(boolean success, String message, Throwable throwable) {
+  private TaskResponse(boolean success, String message) {
     this.success = success;
     this.message = message;
-    this.throwable = throwable;
   }
 
   public int responseCode() {
@@ -37,22 +36,17 @@ public class TaskResponse {
   }
 
   public final GoPluginApiResponse toResponse() {
-    HashMap<String, Object> result = new HashMap<>();
-    result.put("success", this.success);
-    result.put("message", this.message);
-    result.put("exception", this.throwable);
-    return new DefaultGoPluginApiResponse(responseCode(), TaskRequest.GSON.toJson(result));
+    JsonObjectBuilder builder = Json.createObjectBuilder();
+    builder.add("success", this.success);
+    builder.add("message", this.message == null ? "" : this.message);
+    return new DefaultGoPluginApiResponse(responseCode(), builder.build().toString());
   }
 
   public static TaskResponse success(String message) {
-    return new TaskResponse(true, message, null);
+    return new TaskResponse(true, message);
   }
 
   public static TaskResponse failure(String message) {
-    return new TaskResponse(false, message, null);
-  }
-
-  public static TaskResponse failure(Throwable throwable, String message) {
-    return new TaskResponse(false, message, throwable);
+    return new TaskResponse(false, message);
   }
 }

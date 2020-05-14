@@ -14,47 +14,35 @@
 
 package info.tol.gocd.task.qt;
 
-import java.util.Map;
+import info.tol.gocd.task.util.TaskConfig;
 
 // TODO: edit this to map to the fields in your task configuration
 public class QtConfig {
 
-  public static final String REQUEST_BUILD   = "Build";
-  public static final String REQUEST_TARGET  = "Target";
-  public static final String REQUEST_COMMAND = "Command";
+  private final TaskConfig config;
 
 
-  private final String build;
-  private final String target;
-  private final String command;
-
-
-  public QtConfig(Map<String, Map<String, String>> config) {
-    this.build = getValue(config, QtConfig.REQUEST_BUILD);
-    this.target = getValue(config, QtConfig.REQUEST_TARGET);
-    this.command = getValue(config, QtConfig.REQUEST_COMMAND);
-  }
-
-  private String getValue(Map<String, Map<String, String>> config, String property) {
-    return config.get(property).get("value");
+  public QtConfig(TaskConfig config) {
+    this.config = config;
   }
 
   public String getBuild() {
-    return this.build;
+    return config.getValue(Qt2Config.BUILD);
   }
 
   public String getTarget() {
-    return this.target;
+    return config.getValue(Qt2Config.TARGET);
   }
 
   public String getCommand() {
-    return this.command;
+    return config.getValue(Qt2Config.COMMAND);
   }
 
+  public String getPackages() {
+    return config.getValue(Qt2Config.PACKAGES);
+  }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static QtConfig of(Map<?, ?> request) {
-    Map<String, Map<String, String>> config = (Map) request.get("config");
+  public static QtConfig of(TaskConfig config) {
     return new QtConfig(config);
   }
 }

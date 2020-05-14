@@ -19,6 +19,10 @@
 		ng-model="Build">
 		<option value="BUILD">Build</option>
 		<option value="TEST">Test</option>
+		<option value="REPOSITORY">Repository</option>
+		<option value="INSTALLER">Setup</option>
+		<option value="ONLINE">Online Setup</option>
+		<option value="OFFLINE">Offline Setup</option>
 	</select>
 </div>
 
@@ -29,5 +33,9 @@
 
 <div class="form_item_block">
 	<label>Target:</label> <input type="text" ng-model="Target"> </input>
+</div>
+
+<div class="form_item_block">
+	<label>Packages:</label> <input type="text" ng-model="Packages"> </input>
 </div>
 
