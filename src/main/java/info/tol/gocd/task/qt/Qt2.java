@@ -43,6 +43,8 @@ public class Qt2 {
   public static final String  QT_REPOSITORY    = "QT_REPOSITORY";
   public static final String  RELEASE          = "RELEASE";
 
+  public static final String  ANDROID_ABIS     = "ANDROID_ABIS";
+
   /**
    * Get the Qt Architecture.
    *

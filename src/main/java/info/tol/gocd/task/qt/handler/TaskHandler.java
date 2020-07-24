@@ -221,6 +221,11 @@ public class TaskHandler implements RequestHandler {
         args.add("-spec");
         args.add(Qt2.getSpec(request, config));
 
+        String abis = request.getEnvironment().get(Qt2.ANDROID_ABIS);
+        if (abis != null && !abis.trim().isEmpty()) {
+          args.add(String.format("%s=\"%s\"", Qt2.ANDROID_ABIS, abis));
+        }
+
         // Adding CONFIG+=
         Qt2.getConfig(request, config).forEach(c -> args.add("CONFIG+=" + c));
 
@@ -228,13 +233,17 @@ public class TaskHandler implements RequestHandler {
         break;
 
       case TEST:
-        path = Paths.get(Qt2.getArch(request, config), "bin");
+        String arch = Qt2.getArch(request, config);
+        String spec = Qt2.getSpec(request, config);
+
+        path = Paths.get(arch, "bin");
         String bin = new File(qtHome, path.toString()).getAbsolutePath();
+        String lib = Paths.get(request.getWorkingDirectory(), "build", spec, "lib").toFile().getAbsolutePath();
         if (isWindows) {
-          args.add("set PATH=" + bin + ";%PATH%");
+          args.add("set PATH=" + bin + ";" + lib + ";%PATH%");
           args.add("&");
         } else {
-          args.add("LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + bin);
+          args.add("LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + bin + ":" + lib);
         }
 
         String testCase = config.getCommand();
@@ -245,7 +254,6 @@ public class TaskHandler implements RequestHandler {
           testCase += ".exe";
         }
 
-        String spec = Qt2.getSpec(request, config);
         Path test = Paths.get(request.getWorkingDirectory(), "build", spec, "bin");
         args.add(new File(test.toFile(), testCase).getAbsolutePath());
         args.add("-xunitxml");
