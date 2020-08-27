@@ -28,19 +28,20 @@ import info.tol.gocd.util.Environment;
 /**
  * The {@link Qt} is a helper class working on the environment to the QT HOME directory.
  */
-public abstract class Qt {
+public class Qt {
 
   public static final String PATH_REPOSITORY = String.join(File.separator, "build", "repository");
 
 
-  private static final String QT_HOME = "QT_HOME";
+  private static final String QT_HOME    = "QT_HOME";
+  private static final String VC_VARSALL = "VC_VARSALL";
 
   private final File          home;
   private final File          workingDir;
   private final Environment   environment;
 
   private String              packages;
-  private final List<String>  modules = new ArrayList<>();
+  private final List<String>  modules    = new ArrayList<>();
 
   /**
    * Constructs an instance of {@link Qt}.
@@ -81,6 +82,28 @@ public abstract class Qt {
   protected final Environment getEnvironment() {
     return this.environment;
   }
+
+  /**
+   * Get the platform specific make tool
+   */
+  public final String getMakeTool() {
+    if (!isWindows())
+      return "make";
+
+    File jom = new File(getQtBase(), "Tools/QtCreator/bin/jom");
+    String file = jom.getAbsolutePath();
+    return file.contains(" ") ? "\"" + file + "\"" : file;
+  }
+
+  /**
+   * Get the VisualCode Vars All to find the correct architecture.
+   */
+  public final String getVcVarsAll() {
+    File path = new File(environment.get(Qt.VC_VARSALL));
+    String file = new File(path, "vcvarsall.bat").getAbsolutePath();
+    return file.contains(" ") ? "\"" + file + "\"" : file;
+  }
+
 
   /**
    * Get the QtInstallerFramework binary
@@ -163,5 +186,15 @@ public abstract class Qt {
     builder.directory(new File(getWorkingDir().getAbsolutePath()));
     builder.environment().putAll(getEnvironment().toMap());
     return builder.start();
+  }
+
+  /**
+   * Constructs an instance of {@link Qt}.
+   *
+   * @param workingDir
+   * @param environment
+   */
+  public static Qt of(File workingDir, Environment environment) {
+    return new Qt(workingDir, environment);
   }
 }

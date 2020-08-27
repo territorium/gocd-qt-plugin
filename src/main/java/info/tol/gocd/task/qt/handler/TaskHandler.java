@@ -203,42 +203,45 @@ public class TaskHandler implements RequestHandler {
    * @param build
    * @param target
    */
-  private ProcessBuilder createCommand(TaskRequest request, QtConfig config, Build build, String target) {
+  private ProcessBuilder createCommand(TaskRequest task, QtConfig config, Build build, String target) {
+    File workingDir = new File(task.getWorkingDirectory());
+    Qt qt = Qt.of(workingDir, task.getEnvironment());
+
     boolean isWindows = Qt2.isWindows();
     List<String> args = new ArrayList<>();
     if (isWindows) {
-      args.add("vcvarsall.bat");
+      args.add(qt.getVcVarsAll());
       args.add("x86_amd64");
       args.add("&");
     }
 
-    String qtHome = request.getEnvironment().get(Qt2.QT_HOME);
+    String qtHome = task.getEnvironment().get(Qt2.QT_HOME);
     switch (build) {
       case QMAKE:
-        Path path = Paths.get(Qt2.getArch(request, config), "bin", "qmake");
+        Path path = Paths.get(Qt2.getArch(task, config), "bin", "qmake");
 
         args.add(new File(qtHome, path.toString()).getAbsolutePath());
         args.add("-spec");
-        args.add(Qt2.getSpec(request, config));
+        args.add(Qt2.getSpec(task, config));
 
-        String abis = request.getEnvironment().get(Qt2.ANDROID_ABIS);
+        String abis = task.getEnvironment().get(Qt2.ANDROID_ABIS);
         if (abis != null && !abis.trim().isEmpty()) {
           args.add(String.format("%s=\"%s\"", Qt2.ANDROID_ABIS, abis));
         }
 
         // Adding CONFIG+=
-        Qt2.getConfig(request, config).forEach(c -> args.add("CONFIG+=" + c));
+        Qt2.getConfig(task, config).forEach(c -> args.add("CONFIG+=" + c));
 
         args.add(config.getCommand());
         break;
 
       case TEST:
-        String arch = Qt2.getArch(request, config);
-        String spec = Qt2.getSpec(request, config);
+        String arch = Qt2.getArch(task, config);
+        String spec = Qt2.getSpec(task, config);
 
         path = Paths.get(arch, "bin");
         String bin = new File(qtHome, path.toString()).getAbsolutePath();
-        String lib = Paths.get(request.getWorkingDirectory(), "build", spec, "lib").toFile().getAbsolutePath();
+        String lib = Paths.get(task.getWorkingDirectory(), "build", spec, "lib").toFile().getAbsolutePath();
         if (isWindows) {
           args.add("set PATH=" + bin + ";" + lib + ";%PATH%");
           args.add("&");
@@ -254,13 +257,13 @@ public class TaskHandler implements RequestHandler {
           testCase += ".exe";
         }
 
-        Path test = Paths.get(request.getWorkingDirectory(), "build", spec, "bin");
+        Path test = Paths.get(task.getWorkingDirectory(), "build", spec, "bin");
         args.add(new File(test.toFile(), testCase).getAbsolutePath());
         args.add("-xunitxml");
         break;
 
       case MAKE:
-        args.add(isWindows ? "jom" : "make");
+        args.add(qt.getMakeTool());
         if ((target != null) && !target.isEmpty()) {
           args.add(target);
         }
