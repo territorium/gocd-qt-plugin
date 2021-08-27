@@ -90,7 +90,7 @@ public class Qt {
     if (!isWindows())
       return "make";
 
-    File jom = new File(getQtBase(), "Tools/QtCreator/bin/jom");
+    File jom = new File(getQtBase(), "Tools/QtCreator/bin/jom/jom");
     String file = jom.getAbsolutePath();
     return file.contains(" ") ? "\"" + file + "\"" : file;
   }
@@ -113,7 +113,7 @@ public class Qt {
     for (File file : path.toFile().listFiles()) {
       return path.resolve(file.getName()).resolve("bin").toFile();
     }
-    return path.resolve("3.0").resolve("bin").toFile();
+    return path.resolve("4.0").resolve("bin").toFile();
   }
 
   /**
